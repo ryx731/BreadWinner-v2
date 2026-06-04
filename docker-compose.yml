@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: celiac-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=sqlite:///celiac.db
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    volumes:
+      - ./backend:/app
+      - celiac-db:/app/instance
+    depends_on:
+      - frontend
+    networks:
+      - celiac-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: celiac-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - celiac-network
+    restart: unless-stopped
+
+volumes:
+  celiac-db:
+
+networks:
+  celiac-network:
+    driver: bridge
